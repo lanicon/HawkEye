@@ -32,7 +32,10 @@ namespace HawkEye.Logging
 
         public bool Disposed { get; private set; }
 
-        public LoggingSection(object obj) : this(obj.GetType().Name, null)
+        public LoggingSection(object obj) : this(obj, null)
+        { }
+
+        public LoggingSection(object obj, LoggingSection parent) : this(obj.GetType().Name, parent)
         { }
 
         public LoggingSection(string name) : this(name, null)
