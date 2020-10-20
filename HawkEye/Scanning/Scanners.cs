@@ -1,6 +1,7 @@
 ﻿using HawkEye.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,8 @@ namespace HawkEye.Scanning
 
         public IScanner[] GetScanners(string filename)
         {
+            if (!File.Exists(filename))
+                throw new FileNotFoundException($"No file was found at the given path: {filename}");
             return scanners.Where(scanner => scanner.IsValidFor(filename)).ToArray();
         }
     }
