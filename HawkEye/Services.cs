@@ -1,5 +1,6 @@
 ﻿using HawkEye.Commands;
 using HawkEye.Logging;
+using HawkEye.Scanning;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -15,6 +16,7 @@ namespace HawkEye
 
         public static CommandHandler CommandHandler { get; private set; }
         public static TesseractEngine OCR { get; private set; }
+        public static Scanners Scanners { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void Initiate()
@@ -23,10 +25,8 @@ namespace HawkEye
             {
                 logging = new LoggingSection("Services");
 
-                logging.Info("Initiating CommandHandler");
                 CommandHandler = new CommandHandler();
-
-                logging.Info("Initiating Tesseract OCR Engine");
+                Scanners = new Scanners();
                 OCR = new TesseractEngine(@"./Tesseract/tessdata", "deu");
                 logging.Debug($"Using Tesseract {OCR.Version}");
 
@@ -51,8 +51,6 @@ namespace HawkEye
                     Disable(servicesToBeDisposed[i]);
             }
         }
-
-        public static void Register(IDisposable service) => servicesToBeDisposed.Add(service);
 
         public static void Disable(IDisposable service)
         {
