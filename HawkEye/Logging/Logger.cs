@@ -7,13 +7,7 @@ namespace HawkEye.Logging
     internal class Logger
     {
         private static LoggingSection logging = new LoggingSection("Logger");
-        private static List<LogLevel> Levels { get; } = new List<LogLevel>();
-
-        static Logger()
-        {
-            foreach (LogLevel logLevel in Enum.GetValues(typeof(LogLevel)))
-                Levels.Add(logLevel);
-        }
+        private static List<LogLevel> EnabledLevels { get; } = new List<LogLevel>((LogLevel[])Enum.GetValues(typeof(LogLevel)));
 
         public static void Log(LogMessage logMessage)
         {
@@ -25,11 +19,11 @@ namespace HawkEye.Logging
 
             //TODO: Add file logging support
 
-            if (Levels.Contains(logMessage.LogLevel))
+            if (EnabledLevels.Contains(logMessage.LogLevel))
                 Console.WriteLine(logMessage);
         }
 
-        public static bool IsEnabled(LogLevel logLevel) => Levels.Contains(logLevel);
+        public static bool IsEnabled(LogLevel logLevel) => EnabledLevels.Contains(logLevel);
 
         public static void SetEnabled(LogLevel logLevel, bool enabled)
         {
@@ -37,10 +31,10 @@ namespace HawkEye.Logging
             {
                 if (IsEnabled(logLevel))
                     return;
-                Levels.Add(logLevel);
+                EnabledLevels.Add(logLevel);
             }
             else
-                Levels.Remove(logLevel);
+                EnabledLevels.Remove(logLevel);
         }
     }
 }

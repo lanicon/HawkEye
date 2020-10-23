@@ -44,8 +44,9 @@ namespace HawkEye
             PrintLicense();
             Console.Write("\n\n");
 
+#if (!DEBUG)
             Logger.SetEnabled(LogLevel.Debug, false);
-
+#endif
             Services.Initiate();
 
             Services.CommandHandler.TakeControl();
