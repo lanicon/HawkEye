@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HawkEye.Logging;
+using HawkEye.Scanning;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -42,6 +44,8 @@ namespace HawkEye
             PrintLicense();
             Console.Write("\n\n");
 
+            Logger.SetEnabled(LogLevel.Debug, false);
+
             Services.Initiate();
 
             Services.CommandHandler.TakeControl();
@@ -69,9 +73,8 @@ namespace HawkEye
                 "\nwith an open source wrapper made by Charles Weld." +
                 "\nBoth are licensed under the Apache License version 2.0." +
                 "\n" +
-                "\nHawkEye uses the open source DocNet library for parsing PDF files" +
-                "\nwith an open source wrapper made by modestas." +
-                "\nBoth are licensed under the MIT License"
+                "\nHawkEye uses the open source PDFSharp library for parsing PDF files." +
+                "\nIt is licensed under the MIT License."
                 );
         }
     }

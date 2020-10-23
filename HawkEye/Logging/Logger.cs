@@ -6,19 +6,8 @@ namespace HawkEye.Logging
 {
     internal class Logger
     {
+        private static LoggingSection logging = new LoggingSection("Logger");
         private static List<LogLevel> Levels { get; } = new List<LogLevel>();
-
-        public static void Debug(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Debug, message);
-
-        public static void Verbose(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Verbose, message);
-
-        public static void Info(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Info, message);
-
-        public static void Warning(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Warning, message);
-
-        public static void Error(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Error, message);
-
-        public static void Critical(LoggingSection loggingSection, string message) => Log(loggingSection, LogLevel.Critical, message);
 
         static Logger()
         {
@@ -26,15 +15,18 @@ namespace HawkEye.Logging
                 Levels.Add(logLevel);
         }
 
-        public static void Log(LoggingSection loggingSection, LogLevel logLevel, string message)
+        public static void Log(LogMessage logMessage)
         {
-            if (loggingSection.Disposed)
+            if (logMessage.LoggingSection.Disposed)
+            {
+                logging.Warning($"Tried to log a {logMessage.LogLevel}-Message in LoggingSection {logMessage.LoggingSection.Name}, but it has already been disposed");
                 return;
+            }
 
-            LogMessage logMessage = new LogMessage(logLevel, message, DateTime.Now);
-            loggingSection.Messages.Append(logMessage);
-            if (Levels.Contains(logLevel))
-                Console.WriteLine($"[{logLevel.ToString()}] - [{loggingSection.FullPath}]: {message}");
+            //TODO: Add file logging support
+
+            if (Levels.Contains(logMessage.LogLevel))
+                Console.WriteLine(logMessage);
         }
 
         public static bool IsEnabled(LogLevel logLevel) => Levels.Contains(logLevel);

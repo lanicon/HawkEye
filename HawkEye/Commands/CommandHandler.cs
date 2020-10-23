@@ -25,7 +25,7 @@ namespace HawkEye.Commands
                 .Where(t => t.GetConstructors().All(c => c.GetParameters().Length == 0)))
             {
                 ICommand cmd = (ICommand)Activator.CreateInstance(type);
-                logging.Info($"Initialized command {cmd.Name}");
+                logging.Debug($"Initialized command {cmd.Name}");
                 commands.Add(cmd);
             }
             logging.Info($"Initialized {commands.Count} commands");
@@ -72,7 +72,7 @@ namespace HawkEye.Commands
         {
             if (!hasControl)
             {
-                logging.Info($"Took control over Thread \"{Thread.CurrentThread.Name}\"");
+                logging.Debug($"Took control over Thread \"{Thread.CurrentThread.Name}\" and handling console input");
                 hasControl = true;
                 while (Program.IsRunning)
                     HandleInput(Console.ReadLine());

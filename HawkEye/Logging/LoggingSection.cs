@@ -32,16 +32,10 @@ namespace HawkEye.Logging
 
         public bool Disposed { get; private set; }
 
-        public LoggingSection(object obj) : this(obj, null)
+        public LoggingSection(object obj, LoggingSection parent = null) : this(obj.GetType().Name, parent)
         { }
 
-        public LoggingSection(object obj, LoggingSection parent) : this(obj.GetType().Name, parent)
-        { }
-
-        public LoggingSection(string name) : this(name, null)
-        { }
-
-        public LoggingSection(string name, LoggingSection parent)
+        public LoggingSection(string name, LoggingSection parent = null)
         {
             Name = name;
 
@@ -74,25 +68,24 @@ namespace HawkEye.Logging
                 Parent.Children.Remove(this);
 
             Parent = null;
-            Name = null;
             Messages = null;
 
             Disposed = true;
         }
 
         //Wrappers
-        public void Debug(string message) => Logger.Debug(this, message);
+        public void Debug(string message) => Logger.Log(new LogMessage(this, LogLevel.Debug, message, DateTime.Now));
 
-        public void Verbose(string message) => Logger.Verbose(this, message);
+        public void Verbose(string message) => Logger.Log(new LogMessage(this, LogLevel.Verbose, message, DateTime.Now));
 
-        public void Info(string message) => Logger.Info(this, message);
+        public void Info(string message) => Logger.Log(new LogMessage(this, LogLevel.Info, message, DateTime.Now));
 
-        public void Warning(string message) => Logger.Warning(this, message);
+        public void Warning(string message) => Logger.Log(new LogMessage(this, LogLevel.Warning, message, DateTime.Now));
 
-        public void Error(string message) => Logger.Error(this, message);
+        public void Error(string message) => Logger.Log(new LogMessage(this, LogLevel.Error, message, DateTime.Now));
 
-        public void Critical(string message) => Logger.Critical(this, message);
+        public void Critical(string message) => Logger.Log(new LogMessage(this, LogLevel.Critical, message, DateTime.Now));
 
-        public void Log(LogLevel logLevel, string message) => Logger.Log(this, logLevel, message);
+        public void Log(LogLevel logLevel, string message) => Logger.Log(new LogMessage(this, logLevel, message, DateTime.Now));
     }
 }
