@@ -14,6 +14,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading;
@@ -22,29 +23,20 @@ using Tesseract;
 
 namespace HawkEye.Scanning
 {
-    internal class PDFScanner : IScanner
+    internal class PDFScanner : Scanner
     {
-        private LoggingSection logging;
-
-        public PDFScanner()
-        {
-            logging = new LoggingSection(this);
-        }
-
-        public bool IsValidFor(string filename)
+        public override bool IsValidFor(string filename)
         {
             return new FileInfo(filename).Extension.ToLower() == ".pdf";
         }
 
-        public string Scan(string filename)
+        protected override string DoScan(string filename, LoggingSection log)
         {
-            LoggingSection threadLogging = logging.CreateChild($"Thread-{Thread.CurrentThread.Name}");
-            threadLogging.Verbose($"Starting PDFScanner on {filename}");
             PdfDocument pdfDocument = PdfReader.Open(filename);
             StringBuilder stringBuilder = new StringBuilder();
             for (int pageIndex = 0; pageIndex < pdfDocument.PageCount; pageIndex++)
             {
-                threadLogging.Verbose($"Scanning page {pageIndex + 1} of {pdfDocument.PageCount}");
+                log.Verbose($"Scanning page {pageIndex + 1} of {pdfDocument.PageCount}");
                 PdfPage pdfPage = pdfDocument.Pages[pageIndex];
                 //Extract text from text elements
                 stringBuilder.Append($"{ExtractTextFromPdfPage(pdfPage)}{Environment.NewLine}");
@@ -68,31 +60,31 @@ namespace HawkEye.Scanning
                                     Bitmap bitmap = PdfImageToBitmap(xObject);
                                     if (bitmap == null)
                                     {
-                                        threadLogging.Error("Bitmap extracted from PDF element was null. Seems like the PDF image filter type is not supported. Skipping element!");
+                                        log.Error("Bitmap extracted from PDF element was null. Seems like the PDF image filter type is not supported. Skipping element!");
                                         continue;
                                     }
-                                    threadLogging.Debug("Rotating...");
+                                    log.Debug("Rotating image");
                                     bitmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
-                                    threadLogging.Debug("Upscaling...");
+                                    log.Debug("Upscaling image 2x");
                                     BitmapUtils.Scale(ref bitmap, 2);
-                                    threadLogging.Debug("Grayscaling...");
+                                    log.Debug("Grayscaling image");
                                     BitmapUtils.GrayscaleWithLockBits(bitmap);
-                                    threadLogging.Debug("Denoising...");
+                                    log.Debug("Denoising image");
                                     BitmapUtils.DenoiseWithLockBits(bitmap);
-                                    threadLogging.Debug("OCR...");
+                                    log.Debug("Applying OCR on image");
                                     Pix pix = PixConverter.ToPix(bitmap);
                                     Page tesseractPage = Services.OCR.Process(pix);
-                                    string text = null;
                                     try
                                     {
-                                        text = tesseractPage.GetText();
+                                        string text = tesseractPage.GetText();
+                                        log.Debug($"Text is {text.Length} characters long");
+                                        if (!string.IsNullOrWhiteSpace(text) && text != "\n")
+                                            stringBuilder.Append(text.Replace("\n", " "));
                                     }
                                     catch (InvalidOperationException e)
                                     {
-                                        threadLogging.Error($"OCR failed on Page {pageIndex} of file {filename}:\n{e.StackTrace}");
+                                        log.Error($"OCR failed on Page {pageIndex} of file {filename}:\n{e.StackTrace}");
                                     }
-                                    if (!string.IsNullOrWhiteSpace(text) && text != "\n")
-                                        stringBuilder.Append(text.Replace("\n", " "));
                                     tesseractPage.Dispose();
                                     pix.Dispose();
                                 }
@@ -102,16 +94,20 @@ namespace HawkEye.Scanning
                 }
                 stringBuilder.Append("\n");
             }
-            threadLogging.Dispose();
+
+            log.Debug("Trimming text");
             string documentText = stringBuilder.ToString();
             documentText = documentText.Trim();
             while (documentText.Contains("  "))
                 documentText = documentText.Replace("  ", " ");
             while (documentText.Contains("\n\n"))
                 documentText = documentText.Replace("\n\n", "\n");
-            using (StreamWriter streamWriter = new StreamWriter(new FileStream(@"./pages.txt", FileMode.Create, FileAccess.Write)))
-                streamWriter.Write(documentText);
             return stringBuilder.ToString();
+        }
+
+        protected override Task<string> DoScanAsync(string filename, LoggingSection log)
+        {
+            throw new NotImplementedException();
         }
 
         private static Bitmap PdfImageToBitmap(PdfDictionary image)

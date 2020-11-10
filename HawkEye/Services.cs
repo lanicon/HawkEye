@@ -3,6 +3,7 @@ using HawkEye.Logging;
 using HawkEye.Scanning;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Tesseract;
 
@@ -28,7 +29,6 @@ namespace HawkEye
                 CommandHandler = new CommandHandler();
                 Scanners = new Scanners();
                 OCR = new TesseractEngine(@"./Tesseract/tessdata", "deu");
-                logging.Debug($"Using Tesseract {OCR.Version}");
 
                 servicesToBeDisposed = new List<IDisposable>() {
                     CommandHandler,

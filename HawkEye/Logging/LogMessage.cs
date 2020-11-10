@@ -2,7 +2,7 @@
 
 namespace HawkEye.Logging
 {
-    internal class LogMessage
+    public class LogMessage
     {
         public LogLevel LogLevel { get; private set; }
         public LoggingSection LoggingSection { get; private set; }

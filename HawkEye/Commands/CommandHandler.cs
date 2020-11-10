@@ -28,7 +28,7 @@ namespace HawkEye.Commands
                 logging.Debug($"Initialized command {cmd.Name}");
                 commands.Add(cmd);
             }
-            logging.Info($"Initialized {commands.Count} commands");
+            logging.Debug($"Initialized {commands.Count} commands");
         }
 
         public void HandleInput(string input)

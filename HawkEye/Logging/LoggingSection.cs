@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HawkEye.Logging
 {
-    internal class LoggingSection : IDisposable
+    public class LoggingSection : IDisposable
     {
         public LoggingSection Parent { get; private set; }
         public bool HasParent { get { return Parent != null; } }

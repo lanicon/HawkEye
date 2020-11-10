@@ -46,8 +46,13 @@ namespace HawkEye
 
 #if (!DEBUG)
             Logger.SetEnabled(LogLevel.Debug, false);
+            Logger.SetEnabled(LogLevel.Verbose, false);
 #endif
             Services.Initiate();
+
+            string file = "./irgendwas.txt";
+            foreach (Scanner scanner in Services.Scanners.GetScanners(file))
+                Console.WriteLine(scanner.Scan(file));
 
             Services.CommandHandler.TakeControl();
 
