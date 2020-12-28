@@ -19,6 +19,7 @@ namespace HawkEye.Logging
 
             //TODO: Add file logging support
 
+            logMessage.LoggingSection.Messages.Add(logMessage);
             if (EnabledLevels.Contains(logMessage.LogLevel))
                 Console.WriteLine(logMessage);
         }
