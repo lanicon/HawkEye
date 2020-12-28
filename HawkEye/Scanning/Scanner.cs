@@ -24,7 +24,7 @@ namespace HawkEye.Scanning
             log.Verbose($"Starting {GetType().Name} on {fileInfo.FullName}");
             DateTime timeStarted = DateTime.Now;
             string result = null;
-            bool succeeded = false;
+            bool succeeded;
             Exception exception = null;
             try
             {
@@ -50,7 +50,7 @@ namespace HawkEye.Scanning
             log.Verbose($"Starting {GetType().Name} on {fileInfo.FullName}");
             DateTime timeStarted = DateTime.Now;
             string result = null;
-            bool succeeded = false;
+            bool succeeded;
             Exception exception = null;
             try
             {

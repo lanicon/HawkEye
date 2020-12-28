@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Tesseract;
 
 namespace HawkEye
 {
@@ -49,10 +50,6 @@ namespace HawkEye
             Logger.SetEnabled(LogLevel.Verbose, false);
 #endif
             Services.Initiate();
-
-            string file = "./irgendwas.txt";
-            foreach (Scanner scanner in Services.Scanners.GetScanners(file))
-                Console.WriteLine(scanner.Scan(file));
 
             Services.CommandHandler.TakeControl();
 

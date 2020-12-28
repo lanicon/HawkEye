@@ -1,9 +1,11 @@
 ﻿using HawkEye.Commands;
 using HawkEye.Logging;
 using HawkEye.Scanning;
+using HawkEye.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Tesseract;
 
@@ -16,7 +18,7 @@ namespace HawkEye
         private static List<IDisposable> servicesToBeDisposed;
 
         public static CommandHandler CommandHandler { get; private set; }
-        public static TesseractEngine OCR { get; private set; }
+        public static ConcurrentResourceProvider<TesseractEngine> OCRProvider { get; private set; }
         public static Scanners Scanners { get; private set; }
 
         [MethodImpl(MethodImplOptions.Synchronized)]
@@ -28,11 +30,16 @@ namespace HawkEye
 
                 CommandHandler = new CommandHandler();
                 Scanners = new Scanners();
-                OCR = new TesseractEngine(@"./Tesseract/tessdata", "deu");
+
+                OCRProvider = new ConcurrentResourceProvider<TesseractEngine>();
+                TesseractEngine[] tesseractEngine = new TesseractEngine[Environment.ProcessorCount];
+                for (int i = 0; i < tesseractEngine.Length; i++)
+                    tesseractEngine[i] = new TesseractEngine(@"./Tesseract/tessdata", "deu");
+                OCRProvider.Setup(tesseractEngine);
 
                 servicesToBeDisposed = new List<IDisposable>() {
                     CommandHandler,
-                    OCR
+                    OCRProvider
                 };
 
                 initiated = true;
@@ -49,6 +56,9 @@ namespace HawkEye
 
                 for (int i = servicesToBeDisposed.Count - 1; i >= 0; i--)
                     Disable(servicesToBeDisposed[i]);
+
+                logging.Dispose();
+                initiated = false;
             }
         }
 
@@ -58,7 +68,7 @@ namespace HawkEye
             {
                 service.Dispose();
                 servicesToBeDisposed.Remove(service);
-                logging.Debug($"{service.GetType().Name} disposed");
+                logging.Debug($"{service.GetType().Name + (service.GetType().GetTypeInfo().GenericTypeArguments.Length > 0 ? $"<{string.Join(", ", service.GetType().GenericTypeArguments.Select(type => type.Name))}>" : "")} disposed");
             }
             catch (Exception e)
             {

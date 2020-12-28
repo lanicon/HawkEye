@@ -60,7 +60,7 @@ namespace HawkEye.Scanning
                                     Bitmap bitmap = PdfImageToBitmap(xObject);
                                     if (bitmap == null)
                                     {
-                                        log.Error("Bitmap extracted from PDF element was null. Seems like the PDF image filter type is not supported. Skipping element!");
+                                        log.Error("Could not extract bitmap from PDF image element. Seems like the PDF image filter type is not supported. Skipping element!");
                                         continue;
                                     }
                                     log.Debug("Rotating image");
@@ -73,7 +73,8 @@ namespace HawkEye.Scanning
                                     BitmapUtils.DenoiseWithLockBits(bitmap);
                                     log.Debug("Applying OCR on image");
                                     Pix pix = PixConverter.ToPix(bitmap);
-                                    Page tesseractPage = Services.OCR.Process(pix);
+                                    TesseractEngine tesseractEngine = Services.OCRProvider.AwaitResource();
+                                    Page tesseractPage = tesseractEngine.Process(pix);
                                     try
                                     {
                                         string text = tesseractPage.GetText();
@@ -85,7 +86,7 @@ namespace HawkEye.Scanning
                                     {
                                         log.Error($"OCR failed on Page {pageIndex} of file {filename}:\n{e.StackTrace}");
                                     }
-                                    tesseractPage.Dispose();
+                                    Services.OCRProvider.Feed(tesseractEngine);
                                     pix.Dispose();
                                 }
                             }

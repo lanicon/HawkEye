@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace HawkEye.Logging
 {
@@ -32,7 +34,7 @@ namespace HawkEye.Logging
 
         public bool Disposed { get; private set; }
 
-        public LoggingSection(object obj, LoggingSection parent = null) : this(obj.GetType().Name, parent)
+        public LoggingSection(object obj, LoggingSection parent = null) : this(obj.GetType().Name + (obj.GetType().GenericTypeArguments.Length > 0 ? $"<{string.Join(", ", obj.GetType().GenericTypeArguments.Select(type => type.Name))}>" : ""), parent)
         { }
 
         public LoggingSection(string name, LoggingSection parent = null)
